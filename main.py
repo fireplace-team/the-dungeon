@@ -1,9 +1,11 @@
 import pygame, sys, math, random
+import time
 
 pygame.init()
 clock = pygame.time.Clock()
 
-window = pygame.display.set_mode((720,480))
+display = pygame.display.set_mode((720,480),pygame.RESIZABLE)
+window = pygame.Surface((720,480))
 pygame.display.set_caption("the-dungeon")
 pygame.display.set_icon(pygame.image.load("icon.png"))
 
@@ -21,6 +23,7 @@ def distance(pos1 : pygame.Vector2,pos2 : pygame.Vector2) -> float:
 playerrect = pygame.FRect(window.get_width() / 2 - 12,window.get_height() / 2 - 12,24,24)
 playervelocity = pygame.Vector2()
 playeroffset = pygame.Vector2()
+playerknockback = pygame.Vector2()
 
 gunsprite1 = pygame.Surface((256,256))
 gunsprite1.fill((1,1,1)); gunsprite1.set_colorkey((1,1,1))
@@ -254,24 +257,29 @@ generations = random.randint(4,6)
 curgenpos = roomcord.copy()
 oldgenpos = roomcord.copy()
 rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
+roombeat = [[0 for _ in range(len(rooms))] for _ in range(len(rooms[0]))]
+
+roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
+roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,150,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,10)) if not rooms[y][x] in [0,7]] for x in range(5)] for y in range(5)]
+
 for i in range(generations):
     if i == 0:
         if curgenpos == pygame.Vector2(2,4):
             curgenpos = pygame.Vector2(curgenpos.x,curgenpos.y - 1)
             rooms[int(curgenpos.y)][int(curgenpos.x)] = random.randint(1,6)
-            rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
+            # rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
         elif curgenpos == pygame.Vector2(2,0):
             curgenpos = pygame.Vector2(curgenpos.x,curgenpos.y + 1)
             rooms[int(curgenpos.y)][int(curgenpos.x)] = random.randint(1,6)
-            rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
+            # rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
         elif curgenpos == pygame.Vector2(4,2):
             curgenpos = pygame.Vector2(curgenpos.x - 1,curgenpos.y)
             rooms[int(curgenpos.y)][int(curgenpos.x)] = random.randint(1,6)
-            rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
+            # rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
         elif curgenpos == pygame.Vector2(0,2):
             curgenpos = pygame.Vector2(curgenpos.x + 1,curgenpos.y)
             rooms[int(curgenpos.y)][int(curgenpos.x)] = random.randint(1,6)
-            rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
+            # rooms[int(curgenpos.y)][int(curgenpos.x)] = 0
     elif i < generations - 1:
         choices = []
         try: 
@@ -288,16 +296,18 @@ for i in range(generations):
         except: pass
         try: 
             curgenpos = random.choice(choices)
-            print(curgenpos)
+            # print(curgenpos)
             rooms[int(curgenpos.y)][int(curgenpos.x)] = random.randint(1,6)
-        except Exception as e: print(e)
+        except Exception as e: pass# print(e)
     else:
     
         try: 
             curgenpos = random.choice(choices)
             # curgenpos = choices
-            print(curgenpos,"a")
+            # print(curgenpos,"a")
             rooms[int(curgenpos.y)][int(curgenpos.x)] = 7
+            roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
+            # roomenemies[int(curgenpos.y)][int(curgenpos.x)] = []
         except Exception as e: 
             try: 
                 if rooms[int(oldgenpos.y - 1)][int(oldgenpos.x)] == -1: rooms[int(oldgenpos.y - 1)][int(oldgenpos.x)] = 7
@@ -315,19 +325,26 @@ for i in range(generations):
                 if rooms[int(oldgenpos.y)][int(oldgenpos.x + 1)] == -1: rooms[int(oldgenpos.y)][int(oldgenpos.x + 1)] = 7
                 break
             except: pass
+            try: roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
+            except: pass
+            # try: roomenemies[int(curgenpos.y)][int(curgenpos.x)] = []
+            # except: pass
+            
+
 
 
 
 font = pygame.font.SysFont("Source Code Pro",24,True)
 fontsmall = pygame.font.SysFont("Source Code Pro",12)
 
-
 # [position, room, type, speed, size, velocity]
-enemies = [[pygame.Vector2(10,10),pygame.Vector2(2,1),0,100,12,pygame.Vector2()]]
+enemies = [[pygame.Rect(random.randint(100,200),random.randint(100,200),24,24),pygame.Vector2(2,2),0,150,12,pygame.Vector2(0,0)]]
 # [position, room, side, type, speed, size, angle, vel]
 bullets = []
 # [position, velocity, size, shape, lifespan(s)]
 particles = []
+
+rooms[2][2] = 1
 
 minimap = pygame.Surface((150,150)); minimap.fill((255,255,255)); minimap.set_alpha(70)
 
@@ -336,7 +353,7 @@ minimap = pygame.Surface((150,150)); minimap.fill((255,255,255)); minimap.set_al
 while True:
     dt = clock.tick(75) / 1000
     mousepos = pygame.Vector2(pygame.mouse.get_pos())
-    # print(roomcord)
+    # # print(roomcord)
 
     if gundelay > 0: gundelay -= dt
     elif gundelay < 0: gundelay = 0
@@ -351,45 +368,75 @@ while True:
 
     keys = pygame.key.get_pressed()
 
+    if playerknockback.x != 0: playerknockback.x += ((0 - playerknockback.x) / 0.08) * dt
+    if playerknockback.y != 0: playerknockback.y += ((0 - playerknockback.y) / 0.08) * dt
+
+    if 0.3 > playerknockback.x > -0.3: playerknockback.x = 0
+    if 0.3 > playerknockback.y > -0.3: playerknockback.y = 0
+    
+    # print(playerknockback)
+
     # curroom = defrooms[0].copy()
 
     curroom = getroom(rooms[int(roomcord.y)][int(roomcord.x)])
-    # print(curroom)
+    # # print(curroom)
 
-    if (0 < roomcord.x and rooms[int(roomcord.y)][int(roomcord.x - 1)] == -1) or roomcord.x == 0: 
+    if roombeat[int(roomcord.y)][int(roomcord.x)] != 0:
+
+        if (0 < roomcord.x and rooms[int(roomcord.y)][int(roomcord.x - 1)] == -1) or roomcord.x == 0: 
+            for i in range(6,11):    
+                curroom[i][0] = 1
+                curroom[i][1] = 1
+
+
+        if (roomcord.x < len(rooms[0]) - 1 and rooms[int(roomcord.y)][int(roomcord.x + 1)] == -1) or roomcord.x == len(rooms[0]) - 1: 
+            for i in range(6,11):    
+                curroom[i][22] = 1
+                curroom[i][21] = 1
+
+        if (0 < roomcord.y and rooms[int(roomcord.y - 1)][int(roomcord.x)] == -1) or roomcord.y == 0: 
+            for i in range(9,14):    
+                curroom[0][i] = 1
+                curroom[1][i] = 1
+
+
+        if (roomcord.y < len(rooms) - 1 and rooms[int(roomcord.y + 1)][int(roomcord.x)] == -1) or roomcord.y == len(rooms) - 1: 
+            for i in range(9,14):    
+                curroom[16][i] = 1
+                curroom[15][i] = 1
+    else:  
         for i in range(6,11):    
             curroom[i][0] = 1
             curroom[i][1] = 1
 
 
-    if (roomcord.x < len(rooms[0]) - 1 and rooms[int(roomcord.y)][int(roomcord.x + 1)] == -1) or roomcord.x == len(rooms[0]) - 1: 
         for i in range(6,11):    
             curroom[i][22] = 1
             curroom[i][21] = 1
 
-    if (0 < roomcord.y and rooms[int(roomcord.y - 1)][int(roomcord.x)] == -1) or roomcord.y == 0: 
         for i in range(9,14):    
             curroom[0][i] = 1
             curroom[1][i] = 1
 
 
-    if (roomcord.y < len(rooms) - 1 and rooms[int(roomcord.y + 1)][int(roomcord.x)] == -1) or roomcord.y == len(rooms) - 1: 
         for i in range(9,14):    
             curroom[16][i] = 1
             curroom[15][i] = 1
+
+
     oldoffset = pygame.Vector2(worldoffset.x,worldoffset.y)
     # worldoffset.x += playervelocity.x * dt
     playerrect.x -= playervelocity.x * dt
 
     
-
+    playerrect.x += playerknockback.x * dt
 
     for y, row in enumerate(curroom):
         for x, tile in enumerate(row):
             if tile in [1,4] and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
-                if playervelocity.x < 0: 
+                if playervelocity.x < 0 or playerknockback.x > 0: 
                     playerrect.right = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).left
-                elif playervelocity.x > 0: 
+                elif playervelocity.x > 0 or playerknockback.x < 0: 
                     playerrect.left = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).right
             elif tile == 3 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
                 if playerrect.x < window.get_width() / 2:
@@ -403,13 +450,15 @@ while True:
                 
 
     # worldoffset.y += playervelocity.y * dt
+    # playervelocity.y -= 10000 * dt
     playerrect.y -= playervelocity.y * dt
+    playerrect.y += playerknockback.y * dt
     for y, row in enumerate(curroom):
         for x, tile in enumerate(row):
             if tile in [1,4] and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
-                if playervelocity.y > 0: 
+                if playervelocity.y > 0 or playerknockback.y < 0: 
                     playerrect.top = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).bottom
-                elif playervelocity.y < 0: 
+                elif playervelocity.y < 0 or playerknockback.y > 0: 
                     playerrect.bottom = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).top
             elif tile == 3 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
                 if playerrect.y < window.get_height() / 2:
@@ -431,6 +480,7 @@ while True:
 
     if pygame.mouse.get_pressed()[0] and gundelay == 0:
         gundelay = 0.1
+        # playervelocity.y = -1000
         if recoil < 80: recoil += 10
         # [position, room, side, type, speed, size, angle, vel, originalcolor]
         for i in range(1): bullets.append([pygame.Vector2(playerrect.center),roomcord.copy(),'player',0,300,4,angle+90-recoil,pygame.Vector2(math.sin(math.radians(angle + 90+ random.randint(1,30) - recoil)) * 300,math.cos(math.radians(angle + 90 + random.randint(1,30) - recoil)) * 300),(230,220,0),0,0])
@@ -474,15 +524,98 @@ while True:
         # pygame.draw.circle(window,(120,0,140),(340,340),18+blackholedelay * 5)
         # pygame.draw.circle(window,(0,0,0),(340,340),16)
 
-    for i in enemies:
-        # [position, room, type, speed, size]
-        if i[1] == roomcord:
-            i[0] += i[5] * dt
+    for ry, row in enumerate(roomenemies):
+        for rx, tile in enumerate(row):
+            for i in tile:
+                # [position, room, type, speed, size]100
+                if pygame.Vector2(rx,ry) == roomcord:
+                    
+                    # rect = i[0]
 
-            angle = math.atan2(playerrect.x - i[0].x - 60,playerrect.y - i[0].y - 32)
-            i[5].x, i[5].y = math.sin(angle) * i[3], math.cos(angle) * i[3]
+                    # i[5] = pygame.Vector2(0,0)
+                    # i[5] = pygame.Vector2(random.randint(30,70),random.randint(30,70))
+                    
+                    # i[0].centerx += i[5].x * dt 
 
-            if i[2] == 0: pygame.draw.rect(window,(255,0,0),(i[0].x+60-i[4],i[0].y+32-i[4],i[4] * 2, i[4] * 2),i[4])
+                    for ry1, row in enumerate(roomenemies):
+                        for rx1, tile in enumerate(row):
+                            for a in tile:
+                                if pygame.Vector2(rx1,ry1) == roomcord and a != i and a[0].colliderect(i[0]):
+                                    if i[0].x > a[0].x: i[0].centerx -= i[5].x / 2 * dt
+                                    else: i[0].centerx += i[5].x / 2 * dt
+
+
+
+                    for y, row in enumerate(curroom):
+                        for x, tile in enumerate(row):
+                            if tile in [1,4,3] and i[0].colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
+                                if i[5].x > 0: 
+                                    i[0].right = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).left
+                                    # print(i[0].right,"x")
+                                elif i[5].x < 0: 
+                                    i[0].left = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).right
+                                    # print(i[0].left,"x+")
+
+                    # i[0].centery += i[5].y * dt 
+
+                    for ry1, row in enumerate(roomenemies):
+                        for rx1, tile in enumerate(row):
+                            for a in tile:
+                                if pygame.Vector2(rx1,ry1) == roomcord and a != i and a[0].colliderect(i[0]):
+                                    if i[0].y > a[0].y: i[0].centery -= i[5].y  / 2 * dt
+                                    else: i[0].centery += i[5].y / 2 * dt
+
+                    for y, row in enumerate(curroom):
+                        for x, tile in enumerate(row):
+                            if tile in [1,4,3] and i[0].colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32):
+                                if i[5].y < 0: 
+                                    i[0].top = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).bottom
+                                    # print(i[0].top,"y")
+                                elif i[5].y > 0: 
+                                    i[0].bottom = pygame.Rect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).top
+                                    # print(i[0].bottom,"y+")
+
+                    # i[0] = pygame.Vector2(rect.left,rect.top)
+
+                    if abs(distance(pygame.Vector2(playerrect.x,playerrect.y),pygame.Vector2(i[0].x,i[0].y))) > 3:
+                        angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
+                        i[5].x, i[5].y = math.sin(angle) * i[3], math.cos(angle) * i[3]
+                    else:
+                        i[5] = pygame.Vector2(0,0)
+
+                    if i[0].colliderect(playerrect):
+                        angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
+                        playerknockback.x = math.sin(angle) * i[3] * 10
+                        playerknockback.y = math.cos(angle) * i[3] * 10
+                    
+                    for a in bullets:
+                        if i[0].collidepoint(a[0]):
+                            # print(ry)
+                            i[6] -= 10
+
+                            for b in range(10):
+                                speed = 1
+                                random.seed(hash(time.time()))
+                                particles.append([a[0].copy(),
+                                              pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + b,
+                                                             random.randint(4,10) * random.choice([1,-1]) + b),
+                                              2,
+                                              'rect',
+                                              1,
+                                              a[8],
+                                              pygame.Vector2(),
+                                              roomcord.copy()])
+                            bullets.remove(a)
+
+                    if i[2] == 0: 
+                        pygame.draw.rect(window,(255,0,0),i[0],i[4])
+                        # pygame.draw.rect(window,(128,0,0),(i[0].x,i[0].y,(i[0].width / 100) * i[6],i[0].height),i[4])
+                        if i[6] < 100: pygame.draw.rect(window,(128,0,0),(i[0].x,i[0].y,(i[0].width / 100) * i[6],i[0].height),i[4])
+                        elif i[6] <= 0: roomenemies[ry][rx].remove(i)
+
+                        angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
+                        pygame.draw.line(window,(0,255,0),i[0].center,(i[0].centerx + math.sin(angle) * 20,i[0].centery + math.cos(angle) * 20))
+                    pygame.draw.circle(window,(0,255,0),i[0].center,3)
 
     for i in bullets:
         # [position, room, side, type, speed, size, angle, vel]
@@ -494,21 +627,24 @@ while True:
             col = False
             for y, row in enumerate(curroom):
                 for x, tile in enumerate(row):
-                    if tile in [1] and pygame.FRect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).collidepoint(i[0]): 
+                    if tile in [1, 4] and pygame.FRect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).collidepoint(i[0]): 
                         # [position, velocity, size, shape, lifespan(s), color]
 
-                        for a in range(1):
+                        for a in range(10):
                             curangle = random.randint(0,180)
                             speed = random.randint(0,3)
                             # print(curangle)
-                            particles.append([i[0],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),2,'rect',3,i[8],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),roomcord.copy()])
+                            random.seed(hash(time.time()))
+                            particles.append([i[0].copy(),pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + a,random.randint(4,10) * random.choice([1,-1]) + a),2,'rect',1,i[8],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),roomcord.copy()])
                             curangle = 0
 
                         bullets.remove(i)
-                        break
+                        col = True
                     elif tile == 4 and pygame.FRect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).collidepoint(i[0]):
                         bullets.remove(i)
-                        break
+                        col = True
+
+            if col: continue
 
                         # i[7].x *= -1
                         # i[0].x += i[7].x * dt
@@ -524,14 +660,23 @@ while True:
             i[0].y += i[7].y * dt
             for y, row in enumerate(curroom):
                 for x, tile in enumerate(row):
-                    if tile in [1] and pygame.FRect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).collidepoint(i[0]): 
+                    if tile in [1, 4] and pygame.FRect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32).collidepoint(i[0]): 
                         # i[7].y *= -1
                         # i[0].y += i[7].y * dt
-                        for a in range(1):
+                        for a in range(10):
                             curangle = random.randint(0,180)
                             speed = random.randint(0,3)
                             # print(curangle)
-                            particles.append([i[0],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),4,'rect',3,i[8],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),roomcord.copy()])
+                            random.seed(hash(time.time()))
+                            particles.append([i[0].copy(),
+                                              pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + a,
+                                                             random.randint(4,10) * random.choice([1,-1]) + a),
+                                              2,
+                                              'rect',
+                                              1,
+                                              i[8],
+                                              pygame.Vector2(),
+                                              roomcord.copy()])
                             curangle = 0
 
                         try: bullets.remove(i)
@@ -583,7 +728,7 @@ while True:
     # pygame.draw.rect(window,(255,0,0),(playerrect.x-128+12,playerrect.y-128+12,256,256))
     pygame.draw.rect(window,(0,0,255),playerrect)
     
-    angle = math.degrees(math.atan2(mousepos.x-playerrect.centerx,mousepos.y-playerrect.centery)) - 90 + recoil
+    angle = math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) - 90 + (-recoil if math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) < -90 else recoil)
     rotgun = rot_center(pygame.transform.flip(gunsprite,False,True) if angle < -90 else gunsprite,angle,playerrect.centerx,playerrect.centery)
     # print(math.degrees(math.atan2(mousepos.x-playerrect.centerx,mousepos.y-playerrect.centery)) - 90)
     # window.blit(gunsprite,playerrect.topleft - pygame.Vector2(128,128) + pygame.Vector2(12,12))
@@ -591,9 +736,11 @@ while True:
 
     # debug
 
-    window.blit(fontsmall.render(f"DEBUG MENU",True,(255,255,255),(128,0,128)),(0,0))
+    window.blit(fontsmall.render(f"== DEBUG MENU ==",True,(255,255,255),(128,0,128)),(0,0))
     window.blit(fontsmall.render(f"FPS: {round(clock.get_fps(),2)}",True,(255,255,255),(0,0,128)),(0,16))
     window.blit(fontsmall.render(f"ENTITIES: {len(bullets) + len(particles)}",True,(255,255,255),(0,128,0)),(0,32))
+    window.blit(fontsmall.render(f"ROOM POS: {int()}",True,(255,255,255),(0,128,0)),(0,32))
+
 
 
     # minimap.fill((0,0,0))
@@ -608,6 +755,8 @@ while True:
             if rooms[y][x] != -1: window.blit(fontsmall.render(str(rooms[y][x]),True,(255,0,0)),(x*28 + 5 + window.get_width()-20 - 150 + 8,y*28 + 19))
 
 
-    # window.blit(pygame.transform.invert(window),(0,0))
+    display.blit(pygame.transform.scale(window,(display.get_width(),display.get_height())),(0,0))
+
+    # print(display.get_width() / window.get_width())
 
     pygame.display.flip()
