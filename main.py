@@ -24,6 +24,9 @@ playerrect = pygame.FRect(window.get_width() / 2 - 12,window.get_height() / 2 - 
 playervelocity = pygame.Vector2()
 playeroffset = pygame.Vector2()
 playerknockback = pygame.Vector2()
+playerhealth = 100
+playermaxhealth = 100
+playerimmunity = 0
 
 gunsprite1 = pygame.Surface((256,256))
 gunsprite1.fill((1,1,1)); gunsprite1.set_colorkey((1,1,1))
@@ -348,6 +351,16 @@ rooms[2][2] = 1
 
 minimap = pygame.Surface((150,150)); minimap.fill((255,255,255)); minimap.set_alpha(70)
 
+sounds = [
+    pygame.mixer.Sound("hurt.wav"),
+    pygame.mixer.Sound("explosion.wav"),
+    pygame.mixer.Sound("laserShoot.wav"),
+    pygame.mixer.Sound("powerUp.wav")
+]
+
+for i in sounds:
+    i.set_volume(1)
+
 # 608 416
 
 while True:
@@ -373,6 +386,9 @@ while True:
 
     if 0.3 > playerknockback.x > -0.3: playerknockback.x = 0
     if 0.3 > playerknockback.y > -0.3: playerknockback.y = 0
+
+    if playerimmunity > 0: playerimmunity -= dt
+    elif playerimmunity < 0: playerimmunity = 0
     
     # print(playerknockback)
 
@@ -405,23 +421,23 @@ while True:
                 curroom[16][i] = 1
                 curroom[15][i] = 1
     else:  
-        for i in range(6,11):    
-            curroom[i][0] = 1
-            curroom[i][1] = 1
+        for i in range(6,11):
+            curroom[i][0] = 2
+            curroom[i][1] = 4
 
 
         for i in range(6,11):    
-            curroom[i][22] = 1
-            curroom[i][21] = 1
+            curroom[i][22] = 2
+            curroom[i][21] = 4
 
         for i in range(9,14):    
-            curroom[0][i] = 1
-            curroom[1][i] = 1
+            curroom[0][i] = 2
+            curroom[1][i] = 4
 
 
         for i in range(9,14):    
-            curroom[16][i] = 1
-            curroom[15][i] = 1
+            curroom[16][i] = 2
+            curroom[15][i] = 4
 
 
     oldoffset = pygame.Vector2(worldoffset.x,worldoffset.y)
@@ -447,6 +463,7 @@ while True:
                     playerrect.x = 60
                     roomcord.x += 1
                     # print(roomcord)
+                sounds[3].play()
                 
 
     # worldoffset.y += playervelocity.y * dt
@@ -469,6 +486,8 @@ while True:
                     playerrect.y = 40
                     roomcord.y += 1
                     # print(roomcord)
+                sounds[3].play()
+
 
 
     if keys[pygame.K_w]: playervelocity.y = 200
@@ -479,11 +498,25 @@ while True:
     else: playervelocity.x = 0
 
     if pygame.mouse.get_pressed()[0] and gundelay == 0:
+        sounds[2].play()
         gundelay = 0.1
         # playervelocity.y = -1000
         if recoil < 80: recoil += 10
         # [position, room, side, type, speed, size, angle, vel, originalcolor]
-        for i in range(1): bullets.append([pygame.Vector2(playerrect.center),roomcord.copy(),'player',0,300,4,angle+90-recoil,pygame.Vector2(math.sin(math.radians(angle + 90+ random.randint(1,30) - recoil)) * 300,math.cos(math.radians(angle + 90 + random.randint(1,30) - recoil)) * 300),(230,220,0),0,0])
+        for i in range(1): 
+            tmp = math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) - 90 + (-recoil if math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) < -90 else recoil)
+
+            bullets.append([
+                pygame.Vector2(playerrect.center),
+                roomcord.copy(),'player',
+                0,300,4,
+                angle+90-(recoil if tmp < -90 else -recoil),
+                pygame.Vector2(math.sin(math.radians(angle + 90 + (random.randint(1,10) if not angle < -90 else -random.randint(1,10)) - (-recoil if angle < -90 else recoil))) * 300,
+                               math.cos(math.radians(angle + 90 + (random.randint(1,10) if not angle < -90 else -random.randint(1,10)) - (-recoil if angle < -90 else recoil))) * 300),
+                (230,220,0),
+                0,
+                0])
+            sounds[2].play()
 
 
     for event in pygame.event.get():
@@ -526,6 +559,9 @@ while True:
 
     for ry, row in enumerate(roomenemies):
         for rx, tile in enumerate(row):
+            if roomenemies[ry][rx] == []:
+                rooms[ry][rx] = 0
+                roombeat[ry][rx] = 1 
             for i in tile:
                 # [position, room, type, speed, size]100
                 if pygame.Vector2(rx,ry) == roomcord:
@@ -583,10 +619,13 @@ while True:
                     else:
                         i[5] = pygame.Vector2(0,0)
 
-                    if i[0].colliderect(playerrect):
+                    if i[0].colliderect(playerrect) and playerimmunity <= 0:
                         angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
                         playerknockback.x = math.sin(angle) * i[3] * 10
                         playerknockback.y = math.cos(angle) * i[3] * 10
+                        playerhealth -= 5
+                        playerimmunity = 1
+                        sounds[0].play()
                     
                     for a in bullets:
                         if i[0].collidepoint(a[0]):
@@ -599,19 +638,32 @@ while True:
                                 particles.append([a[0].copy(),
                                               pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + b,
                                                              random.randint(4,10) * random.choice([1,-1]) + b),
-                                              2,
+                                              4,
                                               'rect',
                                               1,
                                               a[8],
                                               pygame.Vector2(),
                                               roomcord.copy()])
+                            sounds[0].play()
                             bullets.remove(a)
 
                     if i[2] == 0: 
                         pygame.draw.rect(window,(255,0,0),i[0],i[4])
                         # pygame.draw.rect(window,(128,0,0),(i[0].x,i[0].y,(i[0].width / 100) * i[6],i[0].height),i[4])
                         if i[6] < 100: pygame.draw.rect(window,(128,0,0),(i[0].x,i[0].y,(i[0].width / 100) * i[6],i[0].height),i[4])
-                        elif i[6] <= 0: roomenemies[ry][rx].remove(i)
+                        if i[6] <= 0:
+                            for b in range(10):
+                                particles.append([pygame.Vector2(i[0].center),
+                                                pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + b,
+                                                                random.randint(4,10) * random.choice([1,-1]) + b),
+                                                5,
+                                                'rect',
+                                                10,
+                                                (255,0,0),
+                                                pygame.Vector2(),
+                                                roomcord.copy()])
+                            sounds[1].play()
+                            roomenemies[ry][rx].remove(i)
 
                         angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
                         pygame.draw.line(window,(0,255,0),i[0].center,(i[0].centerx + math.sin(angle) * 20,i[0].centery + math.cos(angle) * 20))
@@ -637,6 +689,8 @@ while True:
                             random.seed(hash(time.time()))
                             particles.append([i[0].copy(),pygame.Vector2(random.randint(4,8) * random.choice([1,-1]) + a,random.randint(4,10) * random.choice([1,-1]) + a),2,'rect',1,i[8],pygame.Vector2(math.sin(math.radians(curangle)) * speed,math.cos(math.radians(curangle)) * speed),roomcord.copy()])
                             curangle = 0
+                        
+                        sounds[0].play()
 
                         bullets.remove(i)
                         col = True
@@ -678,6 +732,8 @@ while True:
                                               pygame.Vector2(),
                                               roomcord.copy()])
                             curangle = 0
+                            sounds[0].play()
+
 
                         try: bullets.remove(i)
                         except: pass
@@ -723,29 +779,34 @@ while True:
             if i[3] == 'rect':
                 pygame.draw.rect(window,i[5],(i[0].x - i[2],i[0].y - i[2],i[2] * 2,i[2] * 2))
 
-    pygame.draw.circle(window,(0,255,0),playerrect.center,4)
+    # pygame.draw.circle(window,(0,255,0),playerrect.center,4)
 
     # pygame.draw.rect(window,(255,0,0),(playerrect.x-128+12,playerrect.y-128+12,256,256))
-    pygame.draw.rect(window,(0,0,255),playerrect)
     
-    angle = math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) - 90 + (-recoil if math.degrees(math.atan2(mousepos.x - playerrect.centerx,mousepos.y - playerrect.centery)) < -90 else recoil)
-    rotgun = rot_center(pygame.transform.flip(gunsprite,False,True) if angle < -90 else gunsprite,angle,playerrect.centerx,playerrect.centery)
-    # print(math.degrees(math.atan2(mousepos.x-playerrect.centerx,mousepos.y-playerrect.centery)) - 90)
-    # window.blit(gunsprite,playerrect.topleft - pygame.Vector2(128,128) + pygame.Vector2(12,12))
-    window.blit(rotgun[0],rotgun[1])
+    if int(playerimmunity * 10) % 2 == 0:
+        pygame.draw.rect(window,(0,0,255),playerrect)
+    
+        angle = math.degrees(math.atan2(mousepos.x - playerrect.centerx * display.get_width() / window.get_width(),mousepos.y - playerrect.centery * display.get_width() / window.get_width())) - 90 + (-recoil if math.degrees(math.atan2(mousepos.x - playerrect.centerx * display.get_width() / window.get_width(),mousepos.y - playerrect.centery * display.get_width() / window.get_width())) < -90 else recoil)
+        rotgun = rot_center(pygame.transform.flip(gunsprite,False,True) if angle < -90 else gunsprite,angle,playerrect.centerx,playerrect.centery)
+        # print(math.degrees(math.atan2(mousepos.x-playerrect.centerx,mousepos.y-playerrect.centery)) - 90)
+        # window.blit(gunsprite,playerrect.topleft - pygame.Vector2(128,128) + pygame.Vector2(12,12))
+        window.blit(rotgun[0],rotgun[1])
 
     # debug
 
     window.blit(fontsmall.render(f"== DEBUG MENU ==",True,(255,255,255),(128,0,128)),(0,0))
     window.blit(fontsmall.render(f"FPS: {round(clock.get_fps(),2)}",True,(255,255,255),(0,0,128)),(0,16))
     window.blit(fontsmall.render(f"ENTITIES: {len(bullets) + len(particles)}",True,(255,255,255),(0,128,0)),(0,32))
-    window.blit(fontsmall.render(f"ROOM POS: {int()}",True,(255,255,255),(0,128,0)),(0,32))
+    window.blit(fontsmall.render(f"ROOM POS: {int(roomcord.x)} | {int(roomcord.y)}",True,(255,255,255),(0,128,128)),(0,48))
 
 
 
     # minimap.fill((0,0,0))
-    window.blit(fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)),(window.get_width()-4-16-fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)).get_width(),160 - fontsmall.get_height() - 2 + 20))
+    window.blit(fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)),(window.get_width()-4-16-fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)).get_width(),160 - fontsmall.get_height() - 2 + 20 + 12))
     window.blit(minimap,(window.get_width()-150-16,10))
+
+    pygame.draw.rect(window,(128,128,128),(window.get_width() - 20 - 64, 160 + 20 - fontsmall.get_height(),64,8))
+    pygame.draw.rect(window,(255,0,0),(window.get_width() - 20 - 64, 160 + 20 - fontsmall.get_height(),(64 / playermaxhealth) * playerhealth,8))
 
     # 28
     for y in range(len(rooms)):
