@@ -28,6 +28,8 @@ playerhealth = 100
 playermaxhealth = 100
 playerimmunity = 0
 
+gunsprites = []
+
 gunsprite1 = pygame.Surface((256,256))
 gunsprite1.fill((1,1,1)); gunsprite1.set_colorkey((1,1,1))
 pygame.draw.rect(gunsprite1,(0,0,40),(128-8,128-6,26,8))
@@ -46,6 +48,28 @@ gunsprite.fill((1,1,1)); gunsprite.set_colorkey((1,1,1))
 
 pygame.draw.lines(gunsprite,(255,255,255),False,pygame.mask.from_surface(gunsprite1).outline(),5)
 gunsprite.blit(gunsprite1,(0,0))
+
+gunsprites.append(gunsprite)
+
+gunsprite1.fill((1,1,1))
+pygame.draw.rect(gunsprite1,(0,0,40),(128-8,128-6,26,8))
+# pygame.draw.rect(gunsprite1,(0,0,40),(128-8,128-2,32,4))
+
+stock = pygame.Surface((24,24)); stock.fill((1,1,1)); stock.set_colorkey((1,1,1)); stock.fill((0,0,0),(6,12-4,12,8))
+stocka = rot_center(stock,50,119,130)
+gunsprite1.blit(stocka[0],stocka[1])
+
+pygame.draw.rect(gunsprite1,(0,230,230),(128+2,128,12,4))
+
+# stock.fill((1,1,1)); stock.fill((0,0,0),(12-6,12-3,12,6))
+# stocka = rot_center(stock,-75,128+6,128+2)
+# gunsprite1.blit(stocka[0],stocka[1])
+
+gunsprite.fill((1,1,1)); gunsprite.set_colorkey((1,1,1))
+
+pygame.draw.lines(gunsprite,(255,255,255),False,pygame.mask.from_surface(gunsprite1).outline(),5)
+gunsprite.blit(gunsprite1,(0,0))
+gunsprites.append(gunsprite)
 
 worldoffset = pygame.Vector2()
 
@@ -66,7 +90,7 @@ def getroom(index) -> list:
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
             [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,2,3],
             [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
             [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
@@ -125,12 +149,12 @@ def getroom(index) -> list:
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [3,2,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,1,0,8,0,1,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,2,3],
             [3,2,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,2,3],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-            [1,1,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1],
@@ -143,7 +167,7 @@ def getroom(index) -> list:
             [1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-            [1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1],
+            [1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1],
             [1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1],
             [3,2,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,2,3],
             [3,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,2,3],
@@ -151,7 +175,7 @@ def getroom(index) -> list:
             [3,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,2,3],
             [3,2,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,2,3],
             [1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1],
-            [1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1],
+            [1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1],
@@ -183,17 +207,17 @@ def getroom(index) -> list:
             [1,1,1,1,1,1,1,1,1,3,3,3,3,3,1,1,1,1,1,1,1,1,1],
             [1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-            [1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1],
-            [1,1,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0,1,1,1,0,1,1],
-            [1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1],
-            [3,2,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,2,3],
-            [3,2,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,1,1,0,8,0,1,1,0,0,0,0,0,0,2,3],
-            [3,2,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,2,3],
-            [3,2,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,2,3],
-            [1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1],
-            [1,1,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0,1,1,1,0,1,1],
-            [1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1],
+            [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
+            [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3],
+            [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1],
+            [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
             [1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1],
             [1,1,1,1,1,1,1,1,1,3,3,3,3,3,1,1,1,1,1,1,1,1,1],
@@ -355,6 +379,7 @@ sounds = [
     pygame.mixer.Sound("hurt.wav"),
     pygame.mixer.Sound("explosion.wav"),
     pygame.mixer.Sound("laserShoot.wav"),
+    pygame.mixer.Sound("enterroom.wav"),
     pygame.mixer.Sound("powerUp.wav")
 ]
 
@@ -362,6 +387,8 @@ for i in sounds:
     i.set_volume(1)
 
 # 608 416
+
+tutorialkeyoffset = 0
 
 while True:
     dt = clock.tick(75) / 1000
@@ -384,8 +411,8 @@ while True:
     if playerknockback.x != 0: playerknockback.x += ((0 - playerknockback.x) / 0.08) * dt
     if playerknockback.y != 0: playerknockback.y += ((0 - playerknockback.y) / 0.08) * dt
 
-    if 0.3 > playerknockback.x > -0.3: playerknockback.x = 0
-    if 0.3 > playerknockback.y > -0.3: playerknockback.y = 0
+    if 2 > playerknockback.x > -2: playerknockback.x = 0
+    if 2 > playerknockback.y > -2: playerknockback.y = 0
 
     if playerimmunity > 0: playerimmunity -= dt
     elif playerimmunity < 0: playerimmunity = 0
@@ -421,23 +448,43 @@ while True:
                 curroom[16][i] = 1
                 curroom[15][i] = 1
     else:  
-        for i in range(6,11):
-            curroom[i][0] = 2
-            curroom[i][1] = 4
+        if (0 < roomcord.x and rooms[int(roomcord.y)][int(roomcord.x - 1)] == -1) or roomcord.x == 0: 
+            for i in range(6,11):    
+                curroom[i][0] = 3
+                curroom[i][1] = 1
+        else:
+            for i in range(6,11):    
+                curroom[i][0] = 3
+                curroom[i][1] = 4
 
 
-        for i in range(6,11):    
-            curroom[i][22] = 2
-            curroom[i][21] = 4
+        if (roomcord.x < len(rooms[0]) - 1 and rooms[int(roomcord.y)][int(roomcord.x + 1)] == -1) or roomcord.x == len(rooms[0]) - 1: 
+            for i in range(6,11):    
+                curroom[i][22] = 3
+                curroom[i][21] = 1
+        else:
+            for i in range(6,11):    
+                curroom[i][22] = 3
+                curroom[i][21] = 4
 
-        for i in range(9,14):    
-            curroom[0][i] = 2
-            curroom[1][i] = 4
+        if (0 < roomcord.y and rooms[int(roomcord.y - 1)][int(roomcord.x)] == -1) or roomcord.y == 0: 
+            for i in range(9,14):    
+                curroom[0][i] = 3
+                curroom[1][i] = 1
+        else:
+            for i in range(9,14):    
+                curroom[0][i] = 3
+                curroom[1][i] = 4
 
 
-        for i in range(9,14):    
-            curroom[16][i] = 2
-            curroom[15][i] = 4
+        if (roomcord.y < len(rooms) - 1 and rooms[int(roomcord.y + 1)][int(roomcord.x)] == -1) or roomcord.y == len(rooms) - 1: 
+            for i in range(9,14):    
+                curroom[16][i] = 1
+                curroom[15][i] = 1
+        else:
+            for i in range(9,14):    
+                curroom[16][i] = 2
+                curroom[15][i] = 4
 
 
     oldoffset = pygame.Vector2(worldoffset.x,worldoffset.y)
@@ -546,10 +593,28 @@ while True:
             if tile == 6:                 
                 pygame.draw.rect(window,(230,0,190),(x * 32 + 60 - 64 - 24 - blackholedelay * 10 - 4,y * 32 + 32 - 64 - 24 - blackholedelay * 10 - 4,48 + blackholedelay * 20 + 8,48 + blackholedelay * 20 + 8))
                 pygame.draw.rect(window,(0,0,0),(x * 32 + 60 - 64 - 24,y * 32 + 32 - 64 - 24,48,48))
-            if tile == 8 and roomsbeat[int(roomcord.y)][int(roomcord.x)] <= 1:
+            if tile == 8 and len(roomenemies[int(roomcord.y)][int(roomcord.x)]) > 0:
                 pygame.draw.rect(window,(220,20,20),(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32))
-            if tile == 8 and roomsbeat[int(roomcord.y)][int(roomcord.x)] == 0:
-                pygame.draw.rect(window,(20,220,20),(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32))
+            elif tile == 8 and len(roomenemies[int(roomcord.y)][int(roomcord.x)]) == 0:
+                if pygame.Rect(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,30).collidepoint(pygame.mouse.get_pos()):
+                    pygame.draw.rect(window,(255,255,255) if distance(pygame.Vector2(x * 32 + 60 - 65 + 17,y * 32 + 32 - 65 + 17),pygame.Vector2(playerrect.centerx,playerrect.centery)) < 150 else (255,0,0),(x * 32 + 60 - 64 - 1,y * 32 + 32 - 64 - 1,34,34))
+                    pygame.draw.rect(window,(0,0,0),(x * 32 - 4 + 8,y * 32 - 64,16,16),0,2)
+                    pygame.draw.rect(window,(70,70,70),(x * 32 - 4 + 8,y * 32 - 68 + tutorialkeyoffset,16,16),0,2)
+                    rendered = fontsmall.render("e",True,(255,255,255))
+                    window.blit(rendered,(x * 32 - 4 + 16 - rendered.get_width() / 2,y * 32 - 68 + tutorialkeyoffset))
+                    if tutorialkeyoffset > 3.95: tutorialkeyoffset = 0
+                    tutorialkeyoffset += ((4 - tutorialkeyoffset) / 0.6) * dt
+                else:
+                    tutorialkeyoffset = 0
+                    # print(tutorialkeyoffset)
+                pygame.draw.rect(window,(220,150,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,30))
+                pygame.draw.rect(window,(220,190,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,14))
+                pygame.draw.rect(window,(220,190,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1 + 10,30,12))
+                pygame.draw.rect(window,(0,0,0),(x * 32 + 60 - 64 + 1 + 13,y * 32 + 32 - 64 + 17,6,8))
+                pygame.draw.rect(window,(0,0,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,30),4)
+                # pygame.draw.rect(window,(0,0,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,14),4)
+                pygame.draw.rect(window,(0,0,0),(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1,30,22),4)
+                
 
                 # pygame.draw.rect(window,(255,255,0),(x * 32 + worldoffset.x + 60 - 32 - 2,y * 32 + worldoffset.y + 41 - 32,32,32))
 
@@ -621,8 +686,8 @@ while True:
 
                     if i[0].colliderect(playerrect) and playerimmunity <= 0:
                         angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
-                        playerknockback.x = math.sin(angle) * i[3] * 10
-                        playerknockback.y = math.cos(angle) * i[3] * 10
+                        playerknockback.x = math.sin(angle) * i[3] * 3
+                        playerknockback.y = math.cos(angle) * i[3] * 3
                         playerhealth -= 5
                         playerimmunity = 1
                         sounds[0].play()
@@ -658,12 +723,15 @@ while True:
                                                                 random.randint(4,10) * random.choice([1,-1]) + b),
                                                 5,
                                                 'rect',
-                                                10,
+                                                5,
                                                 (255,0,0),
                                                 pygame.Vector2(),
                                                 roomcord.copy()])
                             sounds[1].play()
                             roomenemies[ry][rx].remove(i)
+                            if roomenemies[ry][rx] == 0:
+                                sounds[4].play()
+                            print(roomenemies[ry][rx])
 
                         angle = math.atan2(playerrect.x - i[0].x,playerrect.y - i[0].y)
                         pygame.draw.line(window,(0,255,0),i[0].center,(i[0].centerx + math.sin(angle) * 20,i[0].centery + math.cos(angle) * 20))
@@ -787,7 +855,7 @@ while True:
         pygame.draw.rect(window,(0,0,255),playerrect)
     
         angle = math.degrees(math.atan2(mousepos.x - playerrect.centerx * display.get_width() / window.get_width(),mousepos.y - playerrect.centery * display.get_width() / window.get_width())) - 90 + (-recoil if math.degrees(math.atan2(mousepos.x - playerrect.centerx * display.get_width() / window.get_width(),mousepos.y - playerrect.centery * display.get_width() / window.get_width())) < -90 else recoil)
-        rotgun = rot_center(pygame.transform.flip(gunsprite,False,True) if angle < -90 else gunsprite,angle,playerrect.centerx,playerrect.centery)
+        rotgun = rot_center(pygame.transform.flip(gunsprites[1],False,True) if angle < -90 else gunsprites[1],angle,playerrect.centerx,playerrect.centery)
         # print(math.degrees(math.atan2(mousepos.x-playerrect.centerx,mousepos.y-playerrect.centery)) - 90)
         # window.blit(gunsprite,playerrect.topleft - pygame.Vector2(128,128) + pygame.Vector2(12,12))
         window.blit(rotgun[0],rotgun[1])
@@ -813,7 +881,7 @@ while True:
         for x in range(len(rooms[0])):
             if pygame.Vector2(x,y) == roomcord:pygame.draw.rect(window,(0,255,0),(x*28 + 5 + window.get_width()-20 - 150 + 8,y*28 + 19,20,20))
             elif rooms[y][x] != -1: pygame.draw.rect(window,(255,255,255),(x*28 + 5 + window.get_width()-20 - 150 + 8,y*28 + 19,20,20))
-            if rooms[y][x] != -1: window.blit(fontsmall.render(str(rooms[y][x]),True,(255,0,0)),(x*28 + 5 + window.get_width()-20 - 150 + 8,y*28 + 19))
+            if rooms[y][x] != -1: window.blit(fontsmall.render(str(len(roomenemies[y][x])),True,(255,0,0)),(x*28 + 5 + window.get_width()-20 - 150 + 8,y*28 + 19))
 
 
     display.blit(pygame.transform.scale(window,(display.get_width(),display.get_height())),(0,0))
