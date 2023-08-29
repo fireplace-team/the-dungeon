@@ -9,3 +9,5 @@ we dont know, maybe in a few days?
 ## is it going to be hard?
 
 yea obviously
+
+https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png
