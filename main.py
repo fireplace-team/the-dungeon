@@ -29,7 +29,11 @@ playeroffset = pygame.Vector2()
 playerknockback = pygame.Vector2()
 playerhealth = 100
 playermaxhealth = 100
+playerspeed = 200
+playerstrenght = 0
 playerimmunity = 0
+playerloot = 2
+playerdamage = 0
 
 gunsprites = []
 
@@ -334,7 +338,7 @@ rooms[int(curgenpos.y)][int(curgenpos.x)] = 8
 roombeat = [[0 for _ in range(len(rooms))] for _ in range(len(rooms[0]))]
 
 roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
-roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,10)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
+roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,5)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
 endx, endy = -1, -1
 
 if endx == -1:
@@ -465,7 +469,7 @@ guncolors = {
 }
 
 inventory = [
-    [0,weapons.Weapon(pygame.Surface((255,255)),"empty").getrarity()], 
+    [3,weapons.Weapon(pygame.Surface((255,255)),"pistol").getrarity()], 
     [0,weapons.Weapon(pygame.Surface((255,255)),"empty").getrarity()]
 ]
 curinvindex = 0
@@ -477,7 +481,17 @@ finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
 inpopup = False
 popup = pygame.Surface((256,256))
 
-rooms[int(roomcord.y)][int(roomcord.x)] = 0
+rooms[int(roomcord.y)][int(roomcord.x)] = 7
+
+upgrades = ["+speed","+health","+strenght","+damage","+loot"]
+upgradeoption = []
+for i in range(3):
+    choice = random.choice(upgrades)
+    upgradeoption.append(choice)
+    upgrades.remove(choice)
+
+upgrades = ["+speed","+health","+strenght","+damage","+loot"]
+
 for y, row in enumerate(rooms):
     for x, tile in enumerate(row):
         if tile == 7:
@@ -625,8 +639,15 @@ while True:
                     roomcord.x += 1
                     # print(roomcord)
                 sounds[3].play()
-            elif tile == 7 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32) and numenemies == 0:
+            elif tile == 7 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32) and numenemies == 0 and upgradeoption == []:
                 items = []
+
+                for i in range(3):
+                    choice = random.choice(upgrades)
+                    upgradeoption.append(choice)
+                    upgrades.remove(choice)
+
+                upgrades = ["+speed","+health","+strenght","+damage","+loot"]
 
                 for y, row in enumerate(rooms):
                     for x, tile in enumerate(row):
@@ -658,7 +679,7 @@ while True:
                 roombeat = [[0 for _ in range(len(rooms))] for _ in range(len(rooms[0]))]
 
                 roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
-                roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,10)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
+                roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,5)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
                 endx, endy = -1, -1
 
                 if endx == -1:
@@ -754,7 +775,7 @@ while True:
                     roomcord.y += 1
                     # print(roomcord)
                 sounds[3].play()
-            elif tile == 7 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32) and numenemies == 0:
+            elif tile == 7 and playerrect.colliderect(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32) and numenemies == 0 and upgradeoption == []:
                 items = []
                 rooms[int(roomcord.y)][int(roomcord.x)] = 0
                 for y, row in enumerate(rooms):
@@ -762,6 +783,14 @@ while True:
                         if tile == 7:
                             endx, endy = x, y
                             roomenemies[y][x] = []
+
+
+                for i in range(3):
+                    choice = random.choice(upgrades)
+                    upgradeoption.append(choice)
+                    upgrades.remove(choice)
+
+                upgrades = ["+speed","+health","+strenght","+damage","+loot"]
 
                 rooms = [
                     [-1,-1,-1,-1,-1],
@@ -787,7 +816,7 @@ while True:
                 roombeat = [[0 for _ in range(len(rooms))] for _ in range(len(rooms[0]))]
 
                 roombeat[int(curgenpos.y)][int(curgenpos.x)] = 1
-                roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,10)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
+                roomenemies = [[[[pygame.Rect(random.randint(100,600),random.randint(100,400),24,24),pygame.Vector2(2,2),0,100,12,pygame.Vector2(0,0),100] for i in range(random.randint(3,5)) if not rooms[y][x] in [0,7,8]] for x in range(5)] for y in range(5)]
                 endx, endy = -1, -1
 
                 if endx == -1:
@@ -863,11 +892,11 @@ while True:
 
 
 
-    if keys[pygame.K_w]: playervelocity.y = 200
-    elif keys[pygame.K_s]: playervelocity.y = -200
+    if keys[pygame.K_w]: playervelocity.y = playerspeed - min(10,(inventory[curinvindex][1]["weight"] * 2 - playerstrenght))
+    elif keys[pygame.K_s]: playervelocity.y = -playerspeed + min(10,(inventory[curinvindex][1]["weight"] * 2 - playerstrenght))
     else: playervelocity.y = 0
-    if keys[pygame.K_a]: playervelocity.x = 200
-    elif keys[pygame.K_d]: playervelocity.x = -200
+    if keys[pygame.K_a]: playervelocity.x = playerspeed - min(10,(inventory[curinvindex][1]["weight"] * 2 - playerstrenght))
+    elif keys[pygame.K_d]: playervelocity.x = -playerspeed + min(10,(inventory[curinvindex][1]["weight"] * 2 - playerstrenght))
     else: playervelocity.x = 0
 
     if pygame.mouse.get_pressed()[0] and gundelay == 0:
@@ -1008,6 +1037,34 @@ while True:
                 if numenemies > 0:
                     warning = fontmedium.render("you didnt kill all enemies. remaining: "+str(numenemies),True,(255,0,0))
                     window.blit(warning,(x * 32 + 60 - 64 - warning.get_width() / 2,y * 32 + 32 - 64 - 64,48,48))
+                else:
+                # pygame.draw.rect(window,(70,70,70),(x * 32 + 60 - 64 - 24 - 80 - 8,y * 32 + 32 - 64 - 24 - 96,64,64))
+                # pygame.draw.rect(window,(70,70,70),(x * 32 + 60 - 64 - 24 + 80 - 8,y * 32 + 32 - 64 - 24 - 96,64,64))
+                # pygame.draw.rect(window,(70,70,70),(x * 32 + 60 - 64 - 24 - 8,y * 32 + 32 - 64 - 24 - 96,64,64))
+                    # ind = 0
+                    print(upgradeoption)
+                    for ind, i in enumerate(upgradeoption):
+                        pygame.draw.rect(window,(70,70,70),(x * 32 + 60 - 64 - 24 - 88 + 80 * ind,y * 32 + 32 - 64 - 24 - 96,64,64))
+                        if pygame.Rect(x * 32 + 60 - 64 - 24 - 88 + 80 * ind,y * 32 + 32 - 64 - 24 - 96,64,64).collidepoint(pygame.mouse.get_pos()):
+                            pygame.draw.rect(window,(130,130,130),(x * 32 + 60 - 64 - 24 - 88 + 80 * ind,y * 32 + 32 - 64 - 24 - 96,64,64))
+                            if pygame.mouse.get_pressed()[0]:
+                                # upgrades = ["+speed","+health","+strenght","+damage","+loot"]
+                                if upgradeoption[ind] == "+speed":
+                                    playerspeed += 25
+                                elif upgradeoption[ind] == "+health":
+                                    playermaxhealth += 25
+                                    playerhealth += 25
+                                elif upgradeoption[ind] == "+strenght":
+                                    playerstrenght += 10
+                                elif upgradeoption[ind] == "+damage":
+                                    playerdamage += 10
+                                elif upgradeoption[ind] == "+loot":
+                                    playerloot += 1
+                                upgradeoption = []
+                                
+                                
+                        window.blit(fontsmall.render(i,True,(255,255,255)),(x * 32 + 60 - 64 - 24 - 88 + 80 * ind + 32 - fontsmall.render(i,True,(255,255,255)).get_width() / 2,y * 32 + 32 - 64 - 24 - 96 + 32 - fontsmall.render(i,True,(255,255,255)).get_height() / 2))
+                    # ind += 1
 
             # if tile == 8 and len(roomenemies[int(roomcord.y)][int(roomcord.x)]) > 0:
                 # pygame.draw.rect(window,(220,20,20),(x * 32 + 60 - 64,y * 32 + 32 - 64,32,32))
@@ -1023,7 +1080,7 @@ while True:
                     if keys[pygame.K_e]:
                         rooms[int(roomcord.y)][int(roomcord.x)] = 8
                         # [pos, roomcord, itemid, itemdata, velocity, poscopy]
-                        for i in range(2): 
+                        for i in range(playerloot): 
                             random.seed(hash(time.time() + i * 10))
                             idg = random.randint(0,2)
                             items.append([pygame.Vector2(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1),roomcord.copy(),idg,weapons.Weapon(pygame.Surface((255,255)),types[idg + 1]).getrarity(),pygame.Vector2(random.randint(200,300) * (1 if i % 2 == 0 else -1),random.randint(100,200) * -1),pygame.Vector2(x * 32 + 60 - 64 + 1,y * 32 + 32 - 64 + 1),0])
@@ -1127,7 +1184,7 @@ while True:
                         for a in bullets:
                             if i[0].collidepoint(a[0]):
                                 # print(ry)
-                                i[6] -= inventory[curinvindex][1]["damage"]
+                                i[6] -= inventory[curinvindex][1]["damage"] + playerdamage
 
                                 for b in range(10):
                                     speed = 1
@@ -1345,7 +1402,7 @@ while True:
 
 
     # minimap.fill((0,0,0))
-    window.blit(fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)),(window.get_width()-4-16-fontsmall.render(f"{int(roomcord.x)} {int(roomcord.y)}",True,(255,255,255)).get_width(),160 - fontsmall.get_height() - 2 + 20 + 12))
+    window.blit(fontsmall.render(f"{int(playerhealth)} / {int(playermaxhealth)}",True,(255,255,255)),(window.get_width()-4-16-fontsmall.render(f"{int(playerhealth)} / {int(playermaxhealth)}",True,(255,255,255)).get_width(),160 - fontsmall.get_height() - 2 + 20 + 12))
     window.blit(minimap,(window.get_width()-150-16,10))
 
     pygame.draw.rect(window,(128,128,128),(window.get_width() - 20 - 64, 160 + 20 - fontsmall.get_height(),64,8))
