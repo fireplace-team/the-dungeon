@@ -12,8 +12,6 @@ def rot_center(image, angle, x, y):
 
     return rotated_image, new_rect
 
-hex
-
 window = pygame.display.set_mode((800,600))
 
 # print(pygame.image.load("/home/vekidev/Documents/bg.png").get_palette())
@@ -84,7 +82,7 @@ while True:
         # print(path)
     # else: path = (None,[])
 
-    blackout.set_alpha(curalpha)
+    blackout.set_alpha(int(curalpha))
 
     if curalpha >= 250:
         curalpha = 255
@@ -96,6 +94,7 @@ while True:
         if event.type == pygame.KEYDOWN:
             print(nextangleup,nextangledown)
             loading = False
+            curalpha = 0
             if nextangleup % 90 == 0: nextangleup += 45
             else: nextangleup += 90
             if nextangledown % 90 == 0: nextangledown += 45
@@ -117,9 +116,13 @@ while True:
 
     window.blit(downrectr[0],(downrectr[1][0],downrectr[1][1] + downoffset))
     window.blit(uprectr[0],(uprectr[1][0],uprectr[1][1] + upoffset))
+    
+    # window.blit(downrectr[0],(downrectr[1][0],downrectr[1][1] - downoffset - 32))
+    # window.blit(uprectr[0],(uprectr[1][0],uprectr[1][1] + upoffset - 40))
+
 
     if loadtimer > 5:
-        rendered = font.render("hold on tight",True,(1,127,255))
+        rendered = font.render("hold on tight" if loadtimer < 10 else "just a little bit more",True,(1,127,255))
         window.blit(rendered,(window.get_width() / 2 - rendered.get_width() / 2,window.get_height() - font.get_height() - 4))
 
     window.blit(blackout,(0,0))

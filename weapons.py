@@ -15,7 +15,40 @@ WEAPSTATS = {
         "delay.min": 1,
         "delay.max": 3,
         "bullets.min": 25,
-        "bullets.max": 60 
+        "bullets.max": 60,
+        "shootbullets": 1
+    },
+    "shotgun": {
+        "recoil": 5,
+        "damage.min": 15,
+        "damage.max": 40,
+        "reloadtime.min": 10,
+        "reloadtime.max": 18,
+        "range.min": 2,
+        "range.max": 4,
+        "weight.min": 40,
+        "weight.max": 60,
+        "delay.min": 3,
+        "delay.max": 7,
+        "bullets.min": 4,
+        "bullets.max": 8,
+        "shootbullets": 5
+    },
+    "pistol": {
+        "recoil": 3,
+        "damage.min": 7,
+        "damage.max": 15,
+        "reloadtime.min": 7,
+        "reloadtime.max": 12,
+        "range.min": 5,
+        "range.max": 7,
+        "weight.min": 5,
+        "weight.max": 20,
+        "delay.min": 5,
+        "delay.max": 10,
+        "bullets.min": 15,
+        "bullets.max": 30,
+        "shootbullets": 1
     },
     "blank": {
         "recoil": 0,
@@ -30,12 +63,13 @@ WEAPSTATS = {
         "delay.min": 0,
         "delay.max": 0,
         "bullets.min": 0,
-        "bullets.max": 0   
+        "bullets.max": 0,
+        "shootbullets": 1
     }
 }
 
 class Weapon:
-    def __init__(self, image : pygame.Surface, classtype : str = None):
+    def __init__(self, image : pygame.Surface, classtype : str = ''):
         self.image = pygame.Surface((256,256))
         self.image.fill((1,1,1)); self.image.set_colorkey((1,1,1))
         self.image.blit(image,(128-image.get_size()[0],128-image.get_size()[1]))
@@ -75,25 +109,25 @@ class Weapon:
         elif self.rarity >= 10: rating = " [purple]epic[/purple] "
         elif self.rarity >= 5: rating = "[orange_red1]legendary[/orange_red1]"
         elif self.rarity >= 1.5: rating = " [bright_yellow]mythical[/bright_yellow] "
-        elif self.rarity >= -11: rating = " [red]unreal[/red] "
+        elif self.rarity >= -5: rating = " [red]unreal[/red] "
         else: rating = " [bright_cyan]godly[/bright_cyan] "
 
         self.rating = rating
 
         # if not rating in [" common "," [blue]rare[/blue] "," [purple]epic[/purple] ","[orange_red1]legendary[/orange_red1]"," [bright_yellow]mythical[/bright_yellow] "," [red]unreal[/red] "]: rprint(f"{self.damage} dmg | {self.reloadtime / 10} reload (s) | {self.range} range | {self.weight} weight | {self.delay / 10} delay (s) | {self.bullets} mag. size || rarity: {self.rarity} | rating: {rating}")
         rprint(f"{self.damage} dmg | {self.reloadtime / 10} reload (s) | {self.range} range | {self.weight} weight | {self.delay / 10} delay (s) | {self.bullets} mag. size || rarity: {self.rarity} | rating: {rating}")
-        return [self.damage,self.reloadtime,self.range,self.weight,self.delay,self.bullets]
+        return {"damage":self.damage,"reloadtime":self.reloadtime,"range":self.range,"weight":self.weight,"delay":self.delay,"magsize":self.bullets,"bullets":self.stats["shootbullets"],"attachments":[],"rarity":rating}
 
-temp = Weapon(pygame.Surface((256,256)),"rifle")
-i = 0
-while True:
-    temp = Weapon(pygame.Surface((256,256)),"rifle")
-    temp.getrarity()
-    i += 1
-    if not temp.rating in [" [bright_cyan]godly[/bright_cyan] "]: 
-        if not temp.rating in [" common "," [blue]rare[/blue] "]: rprint("[red]nope[/red]") #[" [red]unreal[/red] "," [bright_yellow]mythical[/bright_yellow] "," [bright_cyan]godly[/bright_cyan] "]: rprint("[red]nope[/red]")
-    else:
-        rprint("[green]yay[/green] attempts: [yellow]"+str(i)+"[/yellow]")
-        time.sleep(3)
-        i = 0
+# temp = Weapon(pygame.Surface((256,256)),"rifle")
+# i = 0
+# while True:
+#     temp = Weapon(pygame.Surface((256,256)),"rifle")
+#     temp.getrarity()
+#     i += 1
+#     if not temp.rating in [" [bright_cyan]godly[/bright_cyan] "]: 
+#         if not temp.rating in [" common "," [blue]rare[/blue] "]: rprint("[red]nope[/red]") #[" [red]unreal[/red] "," [bright_yellow]mythical[/bright_yellow] "," [bright_cyan]godly[/bright_cyan] "]: rprint("[red]nope[/red]")
+#     else:
+#         rprint("[green]yay[/green] attempts: [yellow]"+str(i)+"[/yellow]")
+#         time.sleep(3)
+#         i = 0
 
